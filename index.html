@@ -1,35 +1,34 @@
-<!DOCTYPE html><html>
-<head>   
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=.55, user-scalable=no" />
-    
+<html>
+  <head>
+    <title>sketch</title>
+    <meta name="viewport" content="width=device-width, initial-scale=0.9" />
+ 
+
+
     <link rel="stylesheet" type="text/css" href="style.css">
 
-    <script src="Tone.js"></script>
-    <script src="p5.js"></script>
-    <script src="p5.dom.min.js"></script>
-</head>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/p5.min.js"></script>
 
-<body>
+    <!--
+      We use unpkg instead of cdnjs as its recommended by tone.js docs
+    -->
+    <script src="https://unpkg.com/tone@13.8.25/build/Tone.js"></script>
 
-<div id="sequencer" class="container sequencer">
-   <img class="logo" src="assets/STS9_logo.png"  />
-
-  
-    <button id="play-button" class="play-button">PLAY</button>
-    <button id="save-button" class="save-button">SAVE</button>
-
-
-
-      <script src="index.js"></script>
+    
+  </head>
+  <body>
+       <img class="logo" src="assets/STS9_logo.png"  />
+    <p>
       <script src="sketch.js"></script>
-
-<!--   <div id="sketch-holder"></div> -->
-
-  </div>
+    </p>
 
 
+      <!--   <button id="play-button" class="play-button">PLAY</button> -->
+      <img id="play-button" class="play-button"/>
  
-  
 
-</body></html>
+
+
+  </body>
+</html>
