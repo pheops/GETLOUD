@@ -1,7 +1,10 @@
 // Master volume in decior audio
 let synth;
 let sampler;
-let distance;
+var database;
+var patterns = []
+var pbutton = []
+
 
 // Whether the audio sequence is playing
 let playing = false;
@@ -31,7 +34,7 @@ Tone.Transport.bpm.value = 124;
 // Create a Row*Col data structure that has nested arrays
 // [ [ 0, 0, 0 ], [ 0, 0, 0 ], ... ]
 // The data can be 0 (off) or 1 (on)
-const data = [];
+let data = [];
 for (let y = 0; y < numRows; y++) {
   const row = [];
   for (let x = 0; x < numCols; x++) {
@@ -40,13 +43,45 @@ for (let y = 0; y < numRows; y++) {
   data.push(row);
 }
 
+
+
+
 // Create a new canvas to the browser size
 async function setup() {
+
+  var config = {
+    apiKey: "AIzaSyD74PiyPqRdyHZZspk8Gktd4aqzcTzTkGs",
+    authDomain: "getloud-d44c4.firebaseapp.com",
+    projectId: "getloud-d44c4",
+    storageBucket: "getloud-d44c4.appspot.com",
+    databaseURL: "https://getloud-d44c4-default-rtdb.firebaseio.com/",
+    messagingSenderId: "316125851912",
+    appId: "1:316125851912:web:f87fed4d0f13cc4edd3cbd",
+    measurementId: "G-6NG4DK9ZEP"
+  }
+
+firebase.initializeApp(config);
+
+database = firebase.database();
+
+var params = getURLParams();
+  //console.log(params);
+  if (params.id) {
+    //console.log(params.id);
+    showDrawing(params.id);
+  }
+
+  var ref = database.ref('UserPatterns');
+  ref.on('value', gotData, errData);
+//console.log(database);
+
+
   // Setup canvas size as a square
   //const dim = max(windowWidth, windowHeight);
 
   cnv = createCanvas(400, 400);
   cnv.mousePressed(canvasPressed);
+  cnv.parent('sketch-holder');
 
   //pixelDensity(window.devicePixelRatio);
 
@@ -150,11 +185,7 @@ async function setup() {
 // }
 
 
-function preload() {
- 
-  iconPause = loadImage("assets/play.png");
-  iconPlay = loadImage("assets/pause.png");
-}
+
 
 
 
@@ -387,36 +418,6 @@ function onSequenceStep(time, column) {
 
 
 
-
-// When the mouse is pressed, turn on the sequencer
-function mousePressed() {
- 
-  // // No synth loaded yet, just skip mouse click
-  // if (!synth) {
-  //   return;
-  // }
-
-  // if (playing) {
-  //   // If we are currently playing, we stop the sequencer
-  //   playing = false;
-  //   sequence.stop();
-  //   Tone.Transport.stop();
-  // } else {
-  //   // If we aren't currently playing, we can start the sequence
-
-  //   // We do this by creating an array of indices [ 0, 1, 2 ... 15 ]
-  //   const noteIndices = newArray(numCols);
-  //   // create the sequence, passing onSequenceStep function
-  //   sequence = new Tone.Sequence(onSequenceStep, noteIndices, noteInterval);
-
-  //   // Start the sequence and Transport loop
-  //   playing = true;
-  //   sequence.start();
-  //   Tone.Transport.start();
-  // }
-}
-
-
 const configPlayButton = () => {
   const button = document.getElementById("play-button");
   document.getElementById("play-button").src = "assets/play.png"
@@ -425,29 +426,14 @@ const configPlayButton = () => {
    
     if (playing) {
       //e.target.innerText = "PLAY";
-      // e.target.color = "coral";
-        
- 
-  document.getElementById("play-button").src ="assets/pause.png"
-        // {
-        //     document.getElementById("play-button").src = "assets/pause.png";
-        // }
-        // else 
-        // {
-        //     document.getElementById("play-button").src = "assets/play.png";
-        // }
-
-
-
-
-
-
+      // e.target.color = "coral";  
+      document.getElementById("play-button").src ="assets/pause.png"
       playing = false;
       sequence.stop();
       Tone.Transport.stop();
     } else {
       // If we aren't currently playing, we can start the sequence
-document.getElementById("play-button").src ="assets/play.png"
+     document.getElementById("play-button").src ="assets/play.png"
     // We do this by creating an array of indices [ 0, 1, 2 ... 15 ]
     const noteIndices = newArray(numCols);
     // create the sequence, passing onSequenceStep function
@@ -462,10 +448,46 @@ document.getElementById("play-button").src ="assets/play.png"
   });
 };
 
+const configSaveButton = () => {
+  const button2 = document.getElementById("save-button");
+  button2.addEventListener("click", (e) => {
+   e.target.innerText = "SAVE";
+  //console.log(grid)
+  savePattern();
+ 
+})
+}
+
+const configClearButton = () => {
+  const button3 = document.getElementById("clear-button");
+  button3.addEventListener("click", (e) => {
+   e.target.innerText = "CLEAR";
+  //console.log(grid)
+  clearPattern();
+ 
+})
+}
+
+const configShareButton = () => {
+   const button4 = document.getElementById("share-button");
+   button4.addEventListener("click", (e) => {
+   e.target.innerText = "SHARE";
+  //console.log(grid)
+  sharePattern();
+ 
+})
+}
+
+
+
 /* configPlayButton();
 makeSequencer(); */
 window.addEventListener("DOMContentLoaded", () => {
+  configSaveButton();
   configPlayButton();
+  configClearButton();
+  //configShareButton();
+ 
   //makeSequencer();
 });
 
@@ -489,4 +511,120 @@ function newArray(n) {
     array.push(i);
   }
   return array;
+}
+
+
+function clearPattern(){
+
+data = [];
+
+for (let y = 0; y < numRows; y++) {
+  const row = [];
+  for (let x = 0; x < numCols; x++) {
+    row.push(0);
+  }
+  data.push(row);
+}
+}
+
+function sharePattern(){
+console.log("yo")
+}
+
+
+
+ function savePattern() {
+
+  console.log(data)
+   
+     ref = database.ref('UserPatterns');
+
+    var pattern = {
+   
+        grid: data,
+
+
+  };
+    var result = ref.push(pattern, dataSent);
+
+          console.log(data)
+
+    function dataSent(err, status) {
+    console.log(status);
+}
+
+}
+
+function gotData(grid) {
+  //const pDiv = document.getElementById("presets");
+
+  // clear the listing
+  var elts = selectAll('.pbuttons');
+  for (var i = 0; i < elts.length; i++) {
+    elts[i].remove();
+  }
+
+  var patterns = grid.val();
+  var keys = Object.keys(patterns);
+
+  for (let i = 0; i < keys.length; i++) {
+    let key = keys[i];
+  
+  var pbutton = createButton('', keys[i]);
+
+  pbutton.class('pbuttons');
+  pbutton.mousePressed(() => changePattern(keys[i]), );
+
+  ///////PERMALINKS
+    // var perma = createA('?id=' + key, 'link');
+    // perma.parent(pbutton);
+    // perma.style('padding', '4px');
+  ///////PERMALINKS
+  
+    //li.parent('drawinglist');
+  }
+
+  //console.log(keys)
+
+}
+
+
+function changePattern(k){
+     showDrawing(k);
+}
+
+
+
+function errData(err) {
+  console.log(err);
+}
+
+
+function showDrawing(key) {
+  //console.log(arguments);
+  //clearDrawing();
+//   if (key instanceof MouseEvent) {
+//     console.log(key);
+//     // key = this.html();
+//   }
+// console.log(key)
+
+
+  var ref = database.ref('UserPatterns/' + key );
+
+      
+  ref.once('value', onePattern, errData);
+
+  function onePattern(grid) {
+    var dbpattern = grid.val();
+  
+    data = dbpattern.grid;
+
+    
+
+   //console.log(data);
+    //updateGrid(grid);
+  }
+
+  
 }
